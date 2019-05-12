@@ -48,7 +48,7 @@ If you want to schedule via Cron, just add the following line in your Crontab en
 `0 0 * * *` expression means the command will run run at every midnight.
 
 ## Screenshots
-![WordpressBackup Help](https://github.com/MagePsycho/magento2-db-code-backup-bash-script/raw/master/docs/wordpress-backup-script-help.png "Mage2Backup Help")
+![WordpressBackup Help](https://raw.githubusercontent.com/MagePsycho/wordpress-db-code-backup-bash-script/master/docs/wordpress-backup-script-help.png "Mage2Backup Help")
 1. Screentshot - WordpressBackup Help
 
 ## TO-DOS
