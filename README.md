@@ -24,18 +24,31 @@ sudo mv wp-backup.sh /usr/local/bin/wp-backup
 
 ### To backup database only
 ```
-./wp-backup.sh --type=db --src-dir=/path/to/wp/root --dest-dir=/path/to/destination
+./wp-backup.sh --backup-db --src-dir=/path/to/wp/root --dest-dir=/path/to/destination
+```
+If you want to get rid of this message
+> Using a password on the command line interface can be insecure.
+You can create a `.my.cnf` file in home directory with the following config
+```
+[client]
+host=localhost
+user=[your-db-user]
+password=[your-db-pass]
+```
+And use optioin `--use-mysql-config` as
+```
+./wp-backup.sh --backup-db --use-mysql-config --src-dir=/path/to/wp/root --dest-dir=/path/to/destination
 ```
 
 ### To backup code only
 ```
-./wp-backup.sh --type=code --skip-uploads --src-dir=/path/to/wp/root --dest-dir=/path/to/destination
+./wp-backup.sh --backup-code --skip-uploads --src-dir=/path/to/wp/root --dest-dir=/path/to/destination
 ```
-- `--skip-uploads` option excludes `wp-content/uploads` folder
+- You can omit `--skip-uploads` option if you want to include `wp-content/uploads` folder in backup archive
 
 ### To backup code + database
 ```
-./wp-backup.sh --type=all --skip-uploads --src-dir=/path/to/wp/root --dest-dir=/path/to/destination
+./wp-backup.sh --backup-db --backup-code --skip-uploads --src-dir=/path/to/wp/root --dest-dir=/path/to/destination
 ```
 
 *You can omit `--src-dir` option if you are running the script as system-wide command from root folder of wordpress*
@@ -43,7 +56,7 @@ sudo mv wp-backup.sh /usr/local/bin/wp-backup
 ### To schedule backup via Cron
 If you want to schedule via Cron, just add the following line in your Crontab entry `crontab -e`
 ```
-0 0 * * * /path/to/wp-backup.sh --type=all --skip-uploads --src-dir=/path/to/wp/root --dest-dir=/path/to/destination > /dev/null 2>&1
+0 0 * * * /path/to/wp-backup.sh --backup-db --backup-code --use-mysql-config --skip-uploads --src-dir=/path/to/wp/root --dest-dir=/path/to/destination > /dev/null 2>&1
 ```
 `0 0 * * *` expression means the command will run run at every midnight.
 
