@@ -166,19 +166,18 @@ Backup Wordpress Codebase + Database.
 Version $VERSION
 
     Options:
+		-bd,	--backup-db		   Backup DB
+		-bc,	--backup-code	   Backup Code
         -sd,    --src-dir          Source directory (from where backup file will be created, www-dir)
         -dd,    --dest-dir         Destination directory (to where the backup file will be moved)
-        -bt,    --type             Backup Type. Default: all
-                                   Options:
-                                       1. db (for database only)
-                                       2. code (for codebase only)
-                                       3. all (for database + codebase)
+		-uc,	--use-mysql-config Use MySQL config file (~/.my.cnf)
         -su,    --skip-uploads     Skip wp-content/uploads folder content from code backup.
+		-bn 	--backup-name      Backup filename (without extension)
         -h,     --help             Display this help and exit
         -v,     --version          Output version information and exit
 
     Examples:
-        $(basename "$0") --type=all --skip-uploads --src-dir=... --dest-dir=...
+        $(basename "$0") --backup-db --backup-code [--skip-uploads] [--use-mysql-config] --src-dir=... --dest-dir=... [--backup-name]
 
 "
     _printPoweredBy
@@ -216,14 +215,20 @@ function processArgs()
     for arg in "$@"
     do
         case $arg in
-            -bt=*|--type=*)
-                WP_BACKUP_TYPE="${arg#*=}"
+			-bd=*|--backup-db)
+                WP_BACKUP_DB=1
+            ;;
+            -bc=*|--backup-code)
+                WP_BACKUP_CODE=1
             ;;
             -sd=*|--src-dir=*)
                 WP_SRC_DIR="${arg#*=}"
             ;;
             -dd=*|--dest-dir=*)
                 WP_DEST_DIR="${arg#*=}"
+            ;;
+			-uc|--use-mysql-config)
+                WP_USE_MYSQL_CONFIG=1
             ;;
             -su|--skip-uploads)
                 WP_SKIP_UPLOADS=1
@@ -269,13 +274,9 @@ function sanitizeArgs()
 function validateArgs()
 {
     ERROR_COUNT=0
-    if [[ -z "$WP_BACKUP_TYPE" ]]; then
-        _error "Backup type parameter missing."
-        ERROR_COUNT=$((ERROR_COUNT + 1))
-    fi
 
-    if [[ ! -z "$WP_BACKUP_TYPE" && "$WP_BACKUP_TYPE" != @(db|code|all) ]]; then
-        _error "Backup type must be one of db|code|all."
+    if [[ -z "$WP_BACKUP_DB" && -z "$WP_BACKUP_CODE" ]]; then
+        _error "You should mention at least one of the backups: --backup-db or --backup-code"
         ERROR_COUNT=$((ERROR_COUNT + 1))
     fi
 
@@ -345,8 +346,12 @@ function createDbBackup()
     dbName=$(grep DB_NAME "${WP_SRC_DIR}/wp-config.php" |cut -d "'" -f 4)
 
     # @todo option to skip log tables
-    # @tod FIX Warning: Using a password on the command line interface can be insecure.
-	mysqldump -h "$host" -u "$username" -p"$password" "$dbName" | gzip > "$WP_DB_BACKUP_FILE"
+    if [[ "$WP_USE_MYSQL_CONFIG" -eq 1 ]]
+		mysqldump "$dbName" | gzip > "$WP_DB_BACKUP_FILE"
+	else
+		mysqldump -h "$host" -u "$username" -p"$password" "$dbName" | gzip > "$WP_DB_BACKUP_FILE"
+	fi 
+	
 	_success "Done!"
 }
 
@@ -391,7 +396,7 @@ function printSuccessMessage()
 
     echo "################################################################"
     echo ""
-    echo " >> Backup Type           : ${WP_BACKUP_TYPE}"
+    #echo " >> Backup Type           : ${WP_BACKUP_TYPE}"
     echo " >> Backup Source         : ${WP_SRC_DIR}"
     if [[ $WP_BACKUP_TYPE = @(db|database|all) ]]; then
         echo " >> Database Dump File    : ${WP_DB_BACKUP_FILE}"
@@ -419,7 +424,9 @@ VERSION="0.1.0"
 
 WP_SRC_DIR=
 WP_DEST_DIR=
-WP_BACKUP_TYPE=all
+WP_BACKUP_DB=0
+WP_BACKUP_CODE=0
+WP_USE_MYSQL_CONFIG=0
 WP_SKIP_UPLOADS=0
 WP_BACKUP_NAME=
 WP_DB_BACKUP_FILE=
@@ -439,11 +446,11 @@ function main()
     prepareCodebaseFilename
     prepareDatabaseFilename
 
-    if [[ "$WP_BACKUP_TYPE" = @(database|db|all) ]]; then
+    if [[ "$WP_BACKUP_DB" -eq 1 ]]; then
         createDbBackup
     fi
 
-    if [[ "$WP_BACKUP_TYPE" = @(codebase|code|all) ]]; then
+    if [[ "$WP_BACKUP_CODE" -eq 1 ]]; then
         createCodeBackup
     fi
 
