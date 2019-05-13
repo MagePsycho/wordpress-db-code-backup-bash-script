@@ -28,6 +28,7 @@ sudo mv wp-backup.sh /usr/local/bin/wp-backup
 ```
 If you want to get rid of this message
 > Using a password on the command line interface can be insecure.
+
 You can create a `.my.cnf` file in home directory with the following config
 ```
 [client]
@@ -35,7 +36,7 @@ host=localhost
 user=[your-db-user]
 password=[your-db-pass]
 ```
-And use optioin `--use-mysql-config` as
+And use option `--use-mysql-config` as
 ```
 ./wp-backup.sh --backup-db --use-mysql-config --src-dir=/path/to/wp/root --dest-dir=/path/to/destination
 ```
