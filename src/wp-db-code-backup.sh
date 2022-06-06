@@ -346,13 +346,13 @@ function createDbBackup()
     dbName=$(grep DB_NAME "${WP_SRC_DIR}/wp-config.php" |cut -d "'" -f 4)
 
     # @todo option to skip log tables
-    if [[ "$WP_USE_MYSQL_CONFIG" -eq 1 ]]
-		mysqldump "$dbName" | gzip > "$WP_DB_BACKUP_FILE"
-	else
-		mysqldump -h "$host" -u "$username" -p"$password" "$dbName" | gzip > "$WP_DB_BACKUP_FILE"
-	fi 
+    if [[ "$WP_USE_MYSQL_CONFIG" -eq 1 ]]; then
+	mysqldump "$dbName" | gzip > "$WP_DB_BACKUP_FILE"
+    else
+	mysqldump -h "$host" -u "$username" -p"$password" "$dbName" | gzip > "$WP_DB_BACKUP_FILE"
+    fi 
 	
-	_success "Done!"
+    _success "Done!"
 }
 
 function createCodeBackup()
